@@ -1,4 +1,4 @@
-#copied these from some list article online
+#copied these from https://joshmadison.com/2008/04/20/fortune-cookie-fortunes/
 
 fortunes = ['A beautiful, smart, and loving person will be coming into your life.',
 'A dubious friend may be an enemy in camouflage.',
