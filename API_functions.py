@@ -1,10 +1,10 @@
 import requests
-from credentials import valkia_subscriber_token, valk_channel_id
+from credentials import robovalkia_client_id, valkia_subscriber_token, valk_channel_id
 
 def get_subscribers():
 	base_url = "https://api.twitch.tv/helix/subscriptions?broadcaster_id={channel_ID}"
 	page_url = "https://api.twitch.tv/helix/subscriptions?broadcaster_id={channel_ID}&after={pagination}"
-	header = {"Authorization": "Bearer " + valkia_subscriber_token}
+	header = {"Client-ID": robovalkia_client_id, "Authorization": "Bearer " + valkia_subscriber_token}
 
 	all_subscribers = []
 
@@ -31,8 +31,8 @@ def get_subscribers():
             "is_gift": false,
             "plan_name": "Valkians! ",
             "tier": "1000",
-            "user_id": "35931742",
-            "user_name": "Chabar86"
+            "user_id": "12345678",
+            "user_name": "TwitchUser123"
         },
 	"""
 
