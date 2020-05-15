@@ -10,7 +10,7 @@ from datetime      import datetime, date
 from contextlib    import suppress
 
 from chatbot       import ChatBot
-from credentials   import bot_name, password, channel_name
+from credentials   import bot_name, password, channel_name, authorisation_header
 from API_functions import get_subscribers
 from fortunes      import fortunes
 
@@ -35,14 +35,14 @@ ffz_emotes = {"KEKW", "LULW", "POGGIES", "PepeLmao", "Pog", "PogU", "SillyChamp"
 
 valkia_emotes = {"valkLUL"}
 
-spam_phrases = {"cykat blyat", "yeet", "jd", "qq", "sa", "pls riot", "riot pls", "pls key", "drop me pls", "drop me plz", "need key", "no drop", "still no drop", "no key", "no keys", "pp", "szkyrt"}
-spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "[asdfg]{3,}", "[zxcv]{3,}", "(k+e+y+ )?p+l+[sz]+", "[jkhl][jkhlg]{3,}", "(p+l+[sz]+ )?d+r+o+p+([zs]+)?[!.?]*", "d+r+o+p+([zs]+)? (p+l+[sz]+)[!.?]*", "d+r+o+p+( m+e+)?", "d+r+o+p+ k+e+y+[sz]+"}
+spam_phrases = {"pls riot", "riot pls", "pls key", "drop me pls", "drop me plz", "need key", "no drop", "still no drop", "no key", "no keys", "pp", "szkyrt"}
+spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "(k+e+y+ )?p+l+[sz]+", "(p+l+[sz]+ )?d+r+o+p+([zs]+)?[!.?]*", "d+r+o+p+([zs]+)? (p+l+[sz]+)[!.?]*", "d+r+o+p+( m+e+)?", "d+r+o+p+ k+e+y+[sz]+"}
 
-allowed_phrases = {"gg", "ggg", "gggg", "f", "ffs", "gj", "ggs", "ssssss", "hi", "hii", "sad", "gl", "hf", "glhf", "jk", "ads", "gas", "kk"}
+# allowed_phrases = {"gg", "ggg", "gggg", "f", "ffs", "gj", "ggs", "hi", "hii", "sad", "gl", "hf", "glhf", "jk", "ads", "gas", "kk"}
 
 all_emotes = ttv_emotes | ffz_emotes | valkia_emotes
 
-non_english_chars = set("µàáâãäåæçèéêëìíîïñòóôõöøùúûüýćčđğşűžơưαβγδζηθικλμνξπτυχψωϕϵабвгдежзийклмнопрстуфхцчшъыьэюя־׀׆אבגדהוזחטיךכלםמןנסעףפץצקרשתװױײابتحخرسششسیشسزصضعقكلويกงดตนมยรลอะัาูเไ่้აევთლორსქấệồいぅだちㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ䶬一世个了些件会何你芜湖使俄偶全其冲前勇句可啊喔喜好字實將尝常很惡懒成我捷掉擅敏敢时是来棒棕機欢比活流测激然狐狗狸生用界的真码符粹組纯臭至色茶草落要词试语赛跳車过这长门零青검국글난모세요인자좀주짐키한ｋઅંતેતો")
+non_english_chars = set("µàáâãäåæçèéêëìíîïñòóôõöỏøùúûüýćčđğşűžơưαβγδζηθικλμνξπτυχψωϕϵабвгдежзийклмнопрстуфхцчшъыьэюя־׀׆אבגדהוזחטיךכלםמןנסעףפץצקרשתװױײابتحخرسششسیشسزصضعقكلويกงดตนมยรลอะัาูเไ่้აევთლორსქấệồいぅだちㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ䶬一世个了些件会何你芜湖使俄偶全其冲前勇句可啊喔喜好字實將尝常很惡懒成我捷掉擅敏敢时是来棒棕機欢比活流测激然狐狗狸生用界的真码符粹組纯臭至色茶草落要词试语赛跳車过这长门零青검국글난모세요인자좀주짐키한ｋઅંતેતો")
 
 poll_results = {}
 poll_options = {}
@@ -96,19 +96,16 @@ def respond_message(user, message):
 	lower_msg = message.lower()
 	global bot
 
-	if lower_msg in allowed_phrases:
-		return
-
 	if message[0] == "!":
 		command = message[1:].split(" ")[0].lower()
 
 		global cooldowns
 		global command_last_used
 
-		if command in cooldowns and command in command_last_used and command_last_used[command] > time() - cooldowns[command]:
-			return
-		else:
-			command_last_used[command] = time()
+		#if command in cooldowns and command in command_last_used and command_last_used[command] > time() - cooldowns[command]:
+		#	return
+		#else:
+		#	command_last_used[command] = time()
 
 		global voted
 		global poll_results
@@ -123,31 +120,23 @@ def respond_message(user, message):
 		global last_drop_reply
 		global last_watchtime_reply
 
-		#if command == "hello":
-		#	try:
-		#		name = message.split(" ")[1]
-		#	except:
-		#		name = ""
-		#	if name != "":
-		#		bot.send_message( "Hello, " + name + "! valkHey")
-		#		log("Sent Hello in response to user {u}.".format(u=user))
-		#	else:
-		#		bot.send_message( "Hello, " + user + "! valkHey")
-		#elif command in ["dice", "roll"]:
-		#	number = random.choice(range(1,7))
-		#	bot.send_message( user + " rolled a dice and got a " + str(number))
-		if command == "fortune":
+		if command in ["dice", "roll"]:
+			number = random.choice(range(1,7))
+			bot.send_message(user + " rolled a dice and got a " + str(number))
+			return
+		elif command == "fortune":
 			fortune = random.choice(fortunes)
 			bot.send_message(user + ", your fortune is: " + fortune)
 			log("Sent fortune in response to user {u}.".format(u=user))
+			return
 		#elif command == "stat":
 		#	stat = message[1:].split(" ")[1]
 		#	output = get_stat(stat)
-		#	bot.send_message( output)
+		#	bot.send_message(output)
 		#elif command == "droptime":
 		#	time_left = 1586347200 - time()
 		#	if time_left < 0:
-		#		bot.send_message( "Valorant drops are now available!")
+		#		bot.send_message("Valorant drops are now available!")
 		#		
 		#	else:
 		#		hours = int(time_left // 3600)
@@ -159,9 +148,9 @@ def respond_message(user, message):
 		#		ss = "s" if secs == 1 else "s"
 		#		
 		#		if hours > 0:
-		#			bot.send_message( "/me Valorant drops will be available on Valkia's stream at 1pm (UK time) on Tuesday, in {h}{hs}, {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
+		#			bot.send_message("/me Valorant drops will be available on Valkia's stream at 1pm (UK time) on Tuesday, in {h}{hs}, {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
 		#		else:
-		#			bot.send_message( "/me Valorant drops will be available on Valkia's stream in {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
+		#			bot.send_message("/me Valorant drops will be available on Valkia's stream in {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
 
 		elif command == "triangle" and user in mods:
 			
@@ -187,12 +176,12 @@ def respond_message(user, message):
 				if num > 5:
 					num = 5
 
-				big_msg = ""
+				big_msg = "" # allows the two messages to be sent together instantaneously, with no delay between them. Otherwise it's possible for another user to send a message in the small time gap between messages and ruin the effect.
 		
 				counts = list(range(1,num+1)) + list(range(1,num)[::-1])
 				for count in counts:
 					big_msg += ((emote + " ") * count) + "\r\nPRIVMSG #valkia :"
-					#bot.send_message((emote + " ") * count)
+					#bot.send_message((emote + " ") * count) # original implementation
 				big_msg.rstrip("\r\nPRIVMSG #valkia :")
 				bot.send_message(big_msg)
 				log("Sent triangle of {e}, of size {s}, in response to user {u}.".format(s=num, u=user, e=emote))
@@ -203,11 +192,6 @@ def respond_message(user, message):
 			bot.send_message("valkW1 valkW2\r\nPRIVMSG #valkia : valkW3 valkW4")
 			log("Sent valkface in response to user {u}.".format(u=user))
 			return
-		#elif command == "micalert":
-		#	bot.send_message("⚠️🚨ALERT STREAMER 🚨⚠️ ⚠️🚨ALERT STREAMER 🚨⚠️")
-		#	bot.send_message("⚠️YOUR MICROPHONE IS BUGGY 🎙️ valkReee valkS")
-		#	bot.send_message("⚠️🚨ALERT STREAMER 🚨⚠️ ⚠️🚨ALERT STREAMER 🚨⚠️")
-		#	log("Sent MICALERT in response to {u}".format(u=user, m=lower_msg))
 		elif command == "day":
 			days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
 			real_day = days[date.today().weekday()]
@@ -216,14 +200,14 @@ def respond_message(user, message):
 			while day == real_day:
 				day = random.choice(days)
 		
-			bot.send_message( "Valkia thinks that today is " + day + "! valkHyperz valkOk ")
+			bot.send_message("Valkia thinks that today is " + day + "! valkHyperz valkOk ")
 			log("Sent random day in response to user {u}.".format(u=user))
-		#elif command == "mschedule":
-		#	bot.send_message("Monday - Thursday 12pm GMT / 7am ET")
-		#	bot.send_message("Friday - no stream")
-		#	bot.send_message("Saturday - Sunday 12pm GMT / 7am ET")
-		#	log("Sent mschedule in response to user {u}.".format(u=user))
-		#
+		elif command == "mschedule":
+			bot.send_message("Monday - Thursday 12pm GMT / 7am ET")
+			bot.send_message("Friday - no stream")
+			bot.send_message("Saturday - Sunday 12pm GMT / 7am ET")
+			log("Sent mschedule in response to user {u}.".format(u=user))
+		
 		elif command == "subgoal":
 			if len(subscribers) == 0: 
 				return # subs haven't been initialised yet or there's some problem
@@ -254,7 +238,7 @@ def respond_message(user, message):
 			subs_remaining = goal-points
 
 			if subs_remaining < 0:
-				bot.send_message("/me The sub goal has been reached! ({s}/{g})".format(s=f'{subs_remaining:,}', g=f'{goal:,}'))
+				bot.send_message("/me The sub goal has been reached! ({s}/{g})".format(s=f'{points:,}', g=f'{goal:,}'))
 				log("Sent sub goal reached, in response to user {u}.".format(u=user))
 				return
 			else:
@@ -266,7 +250,7 @@ def respond_message(user, message):
 				target = message.split(" ")[1]
 			except IndexError: # no target specified
 				target = user
-
+		
 			if target[0] == "@": # ignore @ tags
 				target = target[1:]
 
@@ -293,39 +277,40 @@ def respond_message(user, message):
 				target = message.split(" ")[1]
 			except IndexError: # no target specified
 				target = user
-
+		
 			if target[0] == "@": # ignore @ tags
 				target = target[1:]
-
+		
 			target = target.lower()
-
+		
 			count = 0
-
+		
 			for sub in subscribers:
 				gifter = subscribers[sub]["gifter_name"].lower()
 				if gifter == target:
 					count+=1
-
+		
 			if count == 0:
 				bot.send_message("None of the current subscribers were gifted by {t}.".format(t=target))
 			else:
 				bot.send_message("/me {c} of the current subscribers were gifted by {t}! Thanks for the support <3 valkGift".format(c=count, t=target))
 		elif command in {"followgoal", "followergoal"}:
 			goal = get_data("followgoal")
-
+		
 			url = "https://api.twitch.tv/helix/users/follows?to_id=3481156"
-			client_ID = "v0az2o10754banni6piq5nw91za6es"
-			ID_only = {"Client-ID": client_ID}
+
 			try:
-				data = requests.get(url, headers=ID_only).json()
+				data = requests.get(url, headers=authorisation_header).json()
 				followers = data["total"]
 				followers_left = goal - followers
 				if followers_left > 0:
 					bot.send_message("/me There are only {f} followers to go until we hit our follow goal of {g}! valkHype".format(f=f'{followers_left:,}', g=f'{goal:,}'))
+					log("Sent followgoal of {f}/{g} in response to {u}.".format(f=f'{followers_left:,}', g=f'{goal:,}', u=user))
 				else:
-					bot.send_message("/me The follower goal of {g} has been met! valkHype".format(g=f'{goal:,}'))
+					bot.send_message("/me The follower goal of {g} has been met! We now have {f} followers! valkHype".format(f=f'{followers:,}',g=f'{goal:,}'))
+					log("Sent followgoal has been met {f}/{g} in response to {u}.".format(f=f'{followers:,}', g=f'{goal:,}', u=user))
 			except (ValueError, KeyError) as ex:
-				return
+				log("Error in followgoal command: " + ex)
 				
 		elif command == "msocial":
 			bot.send_message("/me Twitter: www.twitter.com/officialvalkia")
@@ -358,7 +343,7 @@ def respond_message(user, message):
 					return
 			
 				msg_interval = interval
-				bot.send_message("@{u} Automatic messages will now send every {s} seconds.".format(u=user, s=msg_interval))
+				bot.send_message("/me @{u} Automatic messages will now send every {s} seconds.".format(u=user, s=msg_interval))
 				log("Set messageinterval to {i} in response to user {u}.".format(u=user, i=msg_interval))
 				return
 			elif command == "langfilter":
@@ -473,8 +458,8 @@ def respond_message(user, message):
 
 	elif user not in mods: 
 		if "retard" in lower_msg:
-			bot.send_message( "/timeout " + user + " 600")
-			bot.send_message( "@" + user + " Try a different word.")
+			bot.send_message("/timeout " + user + " 600")
+			bot.send_message("@" + user + " Try a different word.")
 			log("Timed out {u} for r word.".format(u=user))
 			return
 
@@ -510,13 +495,13 @@ def respond_message(user, message):
 ## APPLIES TO ALL ##
 
 		if language_filter and any(chr in lower_msg for chr in non_english_chars):
-			bot.send_message( "/timeout " + user + " 1")
-			bot.send_message( "/me @" + user + " English only in chat please. (!english)")
+			bot.send_message("/timeout " + user + " 1")
+			bot.send_message("/me @" + user + " English only in chat please. (!english)")
 			log("Timed out {u} for non-english: {m}".format(u=user, m=lower_msg))
 			return
 			
 		#if "scam" in lower_msg and "!scam" not in lower_msg and "train" not in lower_msg:
-		#	bot.send_message( "!scam @" + user)
+		#	bot.send_message("!scam @" + user)
 		#	log("Sent !scam in response to {u} ({m})".format(u=user, m=lower_msg))
 		#	return
 
@@ -608,6 +593,7 @@ if __name__ == "__main__":
 	cooldowns = get_data("cooldowns")
 	command_last_used = dict()
 	modwall = 0
+	modwall_mods = set()
 
 	auto_messages = get_data('auto_messages')
 
@@ -625,12 +611,14 @@ if __name__ == "__main__":
 				msg_count+=1
 			if user in mods:
 				modwall += 1
-				if modwall == 10:
+				modwall_mods.add(user)
+				if modwall == 10 and len(modwall_mods) >= 3:
 					bot.send_message("/me #modwall ! valkFlex")
-				if modwall == 20:
+				if modwall == 20 and len(modwall_mods) >= 3:
 					bot.send_message("/me #MEGAMODWALL valkDab")
 			else:
 				modwall = 0
+				modwall_mods = set()
 
 
 		if user == "streamelements":
