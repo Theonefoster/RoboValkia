@@ -1,5 +1,5 @@
 import requests
-from credentials import robovalkia_client_id, valkia_subscriber_token, valk_channel_id
+from credentials import robovalkia_client_id, valkia_subscriber_token, valk_channel_id, g_browser_key
 
 def get_subscribers():
 	base_url = "https://api.twitch.tv/helix/subscriptions?broadcaster_id={channel_ID}"
@@ -49,9 +49,16 @@ def get_subscribers():
 
 	return sub_dict
 
+def get_youtube_sub_count(username):
+	url = "https://www.googleapis.com/youtube/v3/channels?part=statistics&forUsername={username}&key={key}".format(key=g_browser_key, username=username)
+	response = requests.get(url).json()
+	items = response["items"][0]
+	snippet = items["statistics"]
+	return snippet["subscriberCount"]
+
 if __name__ == "__main__":
 	from time import time 
-	print("Starting..")
+	print("Getting Subscribers..")
 	t = time()
 	get_subscribers()
 	diff = time() - t
