@@ -11,7 +11,7 @@ from contextlib    import suppress
 
 from chatbot       import ChatBot
 from credentials   import bot_name, password, channel_name, authorisation_header
-from API_functions import get_subscribers
+from API_functions import get_subscribers, get_youtube_sub_count
 from fortunes      import fortunes
 
 mods = {'valkia', 'zukesr', 'dogofwar_', 'sir_to_you', 'fiveub', 'mrsamkim', 'stodeh', 'phasegames', 'moobot', 
@@ -43,12 +43,6 @@ spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "(k+e+y+ )?p+l+[sz]+", "(p+l+[sz]+ )?d+
 all_emotes = ttv_emotes | ffz_emotes | valkia_emotes
 
 non_english_chars = set("µàáâãäåæçèéêëìíîïñòóôõöỏøùúûüýćčđğşűžơưαβγδζηθικλμνξπτυχψωϕϵабвгдежзийклмнопрстуфхцчшъыьэюя־׀׆אבגדהוזחטיךכלםמןנסעףפץצקרשתװױײابتحخرسششسیشسزصضعقكلويกงดตนมยรลอะัาูเไ่้აევთლორსქấệồいぅだちㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ䶬一世个了些件会何你芜湖使俄偶全其冲前勇句可啊喔喜好字實將尝常很惡懒成我捷掉擅敏敢时是来棒棕機欢比活流测激然狐狗狸生用界的真码符粹組纯臭至色茶草落要词试语赛跳車过这长门零青검국글난모세요인자좀주짐키한ｋઅંતેતો")
-
-poll_results = {}
-poll_options = {}
-voted = set()
-poll_live = False
-poll_title = ""
 
 # Create subscribers object from disk if available:
 if path.exists("subscribers.txt"):
@@ -107,11 +101,6 @@ def respond_message(user, message):
 		#else:
 		#	command_last_used[command] = time()
 
-		global voted
-		global poll_results
-		global poll_live
-		global poll_options
-		global poll_title
 		global all_emotes
 		global fortunes
 		global non_english_chars
@@ -311,6 +300,22 @@ def respond_message(user, message):
 					log("Sent followgoal has been met {f}/{g} in response to {u}.".format(f=f'{followers:,}', g=f'{goal:,}', u=user))
 			except (ValueError, KeyError) as ex:
 				log("Error in followgoal command: " + ex)
+
+		elif command == "ytsubgoal":
+			try:
+				yt_subs = int(get_youtube_sub_count("Valkia"))
+			except ValueError as ex:
+				log("Value Error when retrieving youtube subscriber count: " + str(ex))
+				return
+			except Exception as ex:
+				log("Value Error when retrieving youtube subscriber count: " + str(ex))
+				return
+
+			goal = get_data("ytsubgoal")
+			subs_remaining = goal - yt_subs
+
+			bot.send_message("/me Valkia's youtube channel is only {r} subscribers away from hitting his subscriber goal of {g}!".format(r=f'{subs_remaining:,}', g=f'{goal:,}'))
+			log("Sent youtube subgoal ({r}/{g}) in response to {u}.".format(r=f'{subs_remaining:,}', g=f'{goal:,}', u=user))
 				
 		elif command == "msocial":
 			bot.send_message("/me Twitter: www.twitter.com/officialvalkia")
@@ -574,7 +579,7 @@ def set_data(name, value):
 if __name__ == "__main__":
 	bot = ChatBot(bot_name, password, channel_name)
 	if any(c in non_english_chars for c in "abcdefghijklmnopqrstuvwxyz1234567890 |`¬,./;'#[]<>?:@~{}-=_+!\"£$%^&*()\\"):
-		bot.send_message("@theonefoster initialisation error - check logs.")
+		bot.send_message("@theonefoster initialisation error - check logs.") # double check I haven't put any obvious valid characters in the banned list.. as one slipped in once and it was bad.
 		exit()
 
 	log("Started bot.")
