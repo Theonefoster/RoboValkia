@@ -35,8 +35,8 @@ ffz_emotes = {"KEKW", "LULW", "POGGIES", "PepeLmao", "Pog", "PogU", "SillyChamp"
 
 valkia_emotes = {"valkLUL"}
 
-spam_phrases = {"pls riot", "riot pls", "pls key", "drop me pls", "drop me plz", "need key", "no drop", "still no drop", "no key", "no keys", "pp", "szkyrt"}
-spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "(k+e+y+ )?p+l+[sz]+", "(p+l+[sz]+ )?d+r+o+p+([zs]+)?[!.?]*", "d+r+o+p+([zs]+)? (p+l+[sz]+)[!.?]*", "d+r+o+p+( m+e+)?", "d+r+o+p+ k+e+y+[sz]+"}
+spam_phrases = {"pls riot", "riot pls", "pls key", "drop me pls", "drop me plz", "need key", "no drop", "still no drop", "no key", "no keys",}
+spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "k+e+y+ p+l+[sz]+", "(p+l+[sz]+ )?d+r+o+p+([zs]+)?[!.?]*", "d+r+o+p+([zs]+)? (p+l+[sz]+)[!.?]*", "d+r+o+p+( m+e+)?", "d+r+o+p+ k+e+y+[sz]+"}
 
 # allowed_phrases = {"gg", "ggg", "gggg", "f", "ffs", "gj", "ggs", "hi", "hii", "sad", "gl", "hf", "glhf", "jk", "ads", "gas", "kk"}
 
@@ -96,10 +96,11 @@ def respond_message(user, message):
 		global cooldowns
 		global command_last_used
 
-		#if command in cooldowns and command in command_last_used and command_last_used[command] > time() - cooldowns[command]:
-		#	return
-		#else:
-		#	command_last_used[command] = time()
+		if command in cooldowns and command in command_last_used and command_last_used[command] > time() - cooldowns[command]:
+			log(f"Not responding to command {command} by user {user} within cooldown time.")
+			return
+		else:
+			command_last_used[command] = time()
 
 		global all_emotes
 		global fortunes
@@ -122,24 +123,37 @@ def respond_message(user, message):
 		#	stat = message[1:].split(" ")[1]
 		#	output = get_stat(stat)
 		#	bot.send_message(output)
-		#elif command == "droptime":
-		#	time_left = 1586347200 - time()
-		#	if time_left < 0:
-		#		bot.send_message("Valorant drops are now available!")
-		#		
-		#	else:
-		#		hours = int(time_left // 3600)
-		#		time_left = time_left % 3600
-		#		mins = int(time_left // 60)
-		#		secs = int(time_left % 60)
-		#		hs = "h" if hours == 1 else "h"
-		#		ms = "m" if mins == 1 else "m"
-		#		ss = "s" if secs == 1 else "s"
-		#		
-		#		if hours > 0:
-		#			bot.send_message("/me Valorant drops will be available on Valkia's stream at 1pm (UK time) on Tuesday, in {h}{hs}, {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
-		#		else:
-		#			bot.send_message("/me Valorant drops will be available on Valkia's stream in {m}{ms} and {s}{ss}! https://beta.playvalorant.com".format(h=hours, hs=hs, m=mins, ms=ms, s=secs, ss=ss))
+		elif command == "valorant":
+
+			try:
+				target = message.split(" ")[1]
+			except IndexError: # no target specified
+				target = user
+
+			if target[0] == "@": # ignore @ tags
+				target = target[1:]
+
+			time_left = 1591074000 - time()
+			if time_left < 0:
+				bot.send_message("Valorant is now available!")
+				log(f"Sent Valorant  time to {user}, targeting {target}, showing that the beta is over.")
+			else:
+				hours = int(time_left // 3600)
+				time_left = time_left % 3600
+				mins = int(time_left // 60)
+				secs = int(time_left % 60)
+				hs = "h" if hours == 1 else "h"
+				ms = "m" if mins == 1 else "m"
+				ss = "s" if secs == 1 else "s"
+				
+				if hours > 0:
+					bot.send_message(f"/me @{target} Valorant will be released for public download in {hours}{hs}, {mins}{ms} and {secs}{ss}!")
+				else:
+					bot.send_message(f"/me @{target} Valorant will be released for public download in {mins}{ms} and {secs}{ss}!")
+
+				log(f"Sent Beta end time to {user}, targeting {target}, showing {hours}{hs}, {mins}{ms} and {secs}{ss}")
+
+			return
 
 		elif command == "triangle" and user in mods:
 			
@@ -327,6 +341,23 @@ def respond_message(user, message):
 			bot.send_message("!unbind @" + user)
 			log("Sent !unbind in response to user {u}.".format(u=user))
 
+		if user in subscribers or user in mods:
+			if command in ["setrank", "editrank"]:
+				rank = " ".join(message.split(" ")[1:])
+				peak = get_data("peakrank")
+				touser = "{touser}" # difficult to include this in a formatted string
+				set_data("currentrank", rank)
+				bot.send_message(f"!command edit rank /me ${touser} Valkia is currently ranked {rank}. He placed at Silver ll and peaked at {peak}.")
+				log(f"Set rank to {rank} in response to {user}")
+
+			if command in ["setpeak", "editpeak"]:
+				rank = get_data("currentrank")
+				peak = " ".join(message.split(" ")[1:])
+				touser = "{touser}" # difficult to include this in a formatted string
+				set_data("peakrank", peak)
+				bot.send_message(f"!command edit rank /me ${touser} Valkia is currently ranked {rank}. He placed at Silver ll and peaked at {peak}.")
+				log(f"Set peak to {peak} in response to {user}")
+
 		elif user in mods: #mod commands (must start with !)
 			global language_filter
 			global auto_messages #can't put inside the relevant commands bc of python being dumb
@@ -453,7 +484,6 @@ def respond_message(user, message):
 		return
 
 	if message == "valkW1 valkW2":
-		sleep(0.5)
 		bot.send_message("Jebaited")
 		log("Sent Jebaited in response to {u}.".format(u=user))
 
@@ -461,18 +491,20 @@ def respond_message(user, message):
 	#	bot.send_message("FeelsBirthdayMan")
 	#	log("Sent FeelsBirthdayMan in response to user {u}.".format(u=user))
 
-	elif user not in mods: 
-		if "retard" in lower_msg:
-			bot.send_message("/timeout " + user + " 600")
-			bot.send_message("@" + user + " Try a different word.")
-			log("Timed out {u} for r word.".format(u=user))
-			return
+	if user not in mods: 
+		for phrase in ["retard, faggot"]:
+			if phrase in lower_msg:
+				bot.send_message("/timeout " + user + " 600")
+				bot.send_message("@" + user + " Try a different word.")
+				log(f"Timed out {user} for use of {phrase}.")
+				return
 
 		if user not in subscribers:
 			if spam_filter:
 				if lower_msg in spam_phrases or any(re.fullmatch(r, lower_msg) for r in spam_regexs):
-					bot.send_message("/timeout " + user + " 60")
-					log("Timed out {u} for spam phrase: {m}".format(u=user, m=lower_msg))
+					bot.send_message(f"/timeout {user} 60")
+					bot.send_message(f"!drops @{user}")
+					log(f"Timed out {user} for spam phrase: {lower_msg}")
 					return
 
 				#if (len(message) == 1 
@@ -492,8 +524,8 @@ def respond_message(user, message):
 				caps = "".join(char for char in chars if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ") # copy only capitals
 	
 				if len(chars) > 14 and len(caps) > 0.8 * len(chars) and len(set(words)) >= 3: #set(words) makes sure it only counts unique words
-					bot.send_message("/timeout " + user + " 60")
-					bot.send_message("@" + user + " No need to shout. valkOut (No block caps please.)")
+					bot.send_message(f"/timeout {user} 60")
+					bot.send_message(f"@{user} No need to shout. valkOut (No block caps please.)")
 					log("Timed out {u} for use of capitals: {m}".format(u=user, m=message))
 					return
 
@@ -510,10 +542,10 @@ def respond_message(user, message):
 		#	log("Sent !scam in response to {u} ({m})".format(u=user, m=lower_msg))
 		#	return
 
-		if any(phrase in lower_msg for phrase in ["multiple stream", "more than one stream", "two stream", "2 stream", "more than 1 stream", "increase chance", "increased chance", "increase your chance", "drop chance", "drops chance", "more streams"]):
-			bot.send_message("!chance @" + user)
-			log("Sent !chance in response to {u}: {m}".format(u=user, m=lower_msg))
-			return
+		#if any(phrase in lower_msg for phrase in ["multiple stream", "more than one stream", "two stream", "2 stream", "more than 1 stream", "increase chance", "increased chance", "increase your chance", "drop chance", "drops chance", "more streams"]):
+		#	bot.send_message("!chance @" + user)
+		#	log("Sent !chance in response to {u}: {m}".format(u=user, m=lower_msg))
+		#	return
 
 		#if "!fov" not in message and "fov" in lower_msg:
 		#	bot.send_message("!fov @" + user)
@@ -612,7 +644,10 @@ if __name__ == "__main__":
 
 		for user, message in messages:
 			if message != "" and user != "" and user != "streamelements" and user != "robovalkia":
-				respond_message(user, message)
+				try:
+					respond_message(user, message)
+				except Exception as ex:
+					log("Exception in Respond_Message - " + str(ex) + f". Message was {message} from {user}.")
 				msg_count+=1
 			if user in mods:
 				modwall += 1
@@ -631,7 +666,7 @@ if __name__ == "__main__":
 
 		sleep(0.25)
 
-		with suppress(Exception): #lets the bot carry on operating even if an error occurs while I'm afk
+		try:
 			if enable_messages and last_msg < time() - msg_interval and msg_count >= 20:
 				if len(auto_messages) > 0 and auto_messages is not None:
 					last_msg = time()
@@ -641,3 +676,5 @@ if __name__ == "__main__":
 					if msg_num == len(auto_messages):
 						msg_num = 0
 					continue
+		except Exception as ex:
+			log("Exception in Auto Messages - " + str(ex))
