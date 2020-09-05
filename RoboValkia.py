@@ -33,17 +33,12 @@ ttv_emotes = {'(ditto)', 'PepePls', 'RareParrot', 'dancepls', 'weSmart', 'gachiG
 			  'RainbowPls', 'McRightClick', 'imlunaSleep', 'valkHyperQ', 'reinCharge', 'valkHat'}
 
 ffz_emotes = {"KEKW", "LULW", "POGGIES", "PepeLmao", "Pog", "PogU", "SillyChamp", "jmanLenny", "monkaW"}
-
 valkia_emotes = {"valkLUL"}
-
-spam_phrases = {"pls riot", "riot pls", "pls key", "drop me pls", "drop me plz", "need key", "no drop", "still no drop", "no key", "no keys",}
-spam_regexs = {"k+e+y+([zs]+)?([!?]+)?", "k+e+y+ p+l+[sz]+", "(p+l+[sz]+ )?d+r+o+p+([zs]+)?[!.?]*", "d+r+o+p+([zs]+)? (p+l+[sz]+)[!.?]*", "d+r+o+p+( m+e+)?", "d+r+o+p+ k+e+y+[sz]+"}
-
-# allowed_phrases = {"gg", "ggg", "gggg", "f", "ffs", "gj", "ggs", "hi", "hii", "sad", "gl", "hf", "glhf", "jk", "ads", "gas", "kk"}
-
 all_emotes = ttv_emotes | ffz_emotes | valkia_emotes
 
 non_english_chars = set("µàáâãäåæçèéêëìíîïñòóôõöỏøùúûüýćčđğşűžơưαβγδζηθικλμνξπτυχψωϕϵабвгдежзийклмнопрстуфхцчшъыьэюя־׀׆אבגדהוזחטיךכלםמןנסעףפץצקרשתװױײابتحخرسششسیشسزصضعقكلويกงดตนมยรลอะัาูเไ่้აევთლორსქấệồいぅだちㄱㄲㄳㄴㄵㄶㄷㄸㄹㄺㄻㄼㄽㄾㄿㅀㅁㅂㅃㅄㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎㅏㅐㅑㅒㅓㅔㅕㅖㅗㅘㅙㅚㅛㅜㅝㅞㅟㅠㅡㅢㅣ䶬一世个了些件会何你芜湖使俄偶全其冲前勇句可啊喔喜好字實將尝常很惡懒成我捷掉擅敏敢时是来棒棕機欢比活流测激然狐狗狸生用界的真码符粹組纯臭至色茶草落要词试语赛跳車过这长门零青검국글난모세요인자좀주짐키한ｋઅંતેતો")
+
+in_duel = False
 
 # Create subscribers object from disk if available:
 #if path.exists("subscribers.txt"):
@@ -115,6 +110,20 @@ def respond_message(user, message):
 			number = random.choice(range(1,7))
 			bot.send_message(user + " rolled a dice and got a " + str(number))
 			return
+		elif command == "smile":
+			bot.send_message(":)")
+		elif user in ["phillyyy", "theonefoster"] and command == "duel":
+			global in_duel
+			target = message.split(" ")[1].lower()
+			try:
+				amount = int(message.split(" ")[2])
+			except:
+				return
+
+			if target in ["robovalkia", "@robovalkia"] and amount <= 200:
+				bot.send_message("!accept")
+				log(f"Accepted a duel against {user} for {amount}")
+				in_duel = True
 		elif command == "fortune":
 			fortune = random.choice(fortunes)
 			bot.send_message(user + ", your fortune is: " + fortune)
@@ -312,7 +321,7 @@ def respond_message(user, message):
 				followers = data["total"]
 				followers_left = goal - followers
 				if followers_left > 0:
-					bot.send_message("/me There are only {f} followers to go until we hit our follow goal of {g}! valkHype".format(f=f'{followers_left:,}', g=f'{goal:,}'))
+					bot.send_message(f"/me We currently have {followers:,} followers, so there are only {followers_left:,} to go until we hit our follow goal of {goal:,}! valkHype")
 					log("Sent followgoal of {f}/{g} in response to {u}.".format(f=f'{followers_left:,}', g=f'{goal:,}', u=user))
 				else:
 					bot.send_message("/me The follower goal of {g} has been met! We now have {f} followers! valkHype".format(f=f'{followers:,}',g=f'{goal:,}'))
@@ -348,6 +357,10 @@ def respond_message(user, message):
 		elif "unbind crouch" in lower_msg:
 			bot.send_message("!unbind @" + user)
 			log("Sent !unbind in response to user {u}.".format(u=user))
+
+		elif "r/valkiatwitch" in lower_msg:
+			bot.send_message("/timeout @" + user)
+			log(f"Timed out {user}for mentioning valkiatwitch subreddit.")
 
 		if user in mods:
 			if command in ["setrank", "editrank"]:
@@ -532,10 +545,6 @@ def respond_message(user, message):
 		bot.send_message("Jebaited")
 		log("Sent Jebaited in response to {u}.".format(u=user))
 
-	#elif "birthday" in lower_msg and "feelsbirthday" not in lower_msg:
-	#	bot.send_message("FeelsBirthdayMan")
-	#	log("Sent FeelsBirthdayMan in response to user {u}.".format(u=user))
-
 	if user not in mods: 
 		for phrase in ["retard, faggot"]:
 			if phrase in lower_msg:
@@ -543,36 +552,6 @@ def respond_message(user, message):
 				bot.send_message("@" + user + " Try a different word.")
 				log(f"Timed out {user} for use of {phrase}.")
 				return
-
-#		if user not in subscribers:
-#			if spam_filter:
-#				if lower_msg in spam_phrases or any(re.fullmatch(r, lower_msg) for r in spam_regexs):
-#					bot.send_message(f"/timeout {user} 60")
-#					bot.send_message(f"!drops @{user}")
-#					log(f"Timed out {user} for spam phrase: {lower_msg}")
-#					return
-#
-#				if (len(message) == 1 
-#					and lower_msg in "abcdeghijlmnopqrstuvwxyz1234567890()[];.,/#~'"):
-#						bot.send_message("/timeout @" + user + " 60")
-#						log("Timed out {u} for single char: {m}".format(u=user, m=lower_msg))
-#						#bot.send_message("@" + user + " no need for the pointless spam.")
-#						return
-#
-#				#if message.startswith("\x01ACTION"):
-#				#	bot.send_message("/timeout " + user + " 60")
-#				#	bot.send_message("/me @" + user + " - Please don't use /me here.")
-#
-#			if caps_filter: #capital letters check
-#				words = [w for w in message.split(" ") if w not in all_emotes]
-#				chars = "".join(c for c in "".join(w for w in words) if c.lower() in "abcdefghijklmnopqrstuvwxyz")
-#				caps = "".join(char for char in chars if char in "ABCDEFGHIJKLMNOPQRSTUVWXYZ") # copy only capitals
-#	
-#				if len(chars) > 14 and len(caps) > 0.8 * len(chars) and len(set(words)) >= 3: #set(words) makes sure it only counts unique words
-#					bot.send_message(f"/timeout {user} 60")
-#					bot.send_message(f"@{user} No need to shout. valkOut (No block caps please.)")
-#					log("Timed out {u} for use of capitals: {m}".format(u=user, m=message))
-#					return
 
 ## APPLIES TO ALL ##
 
@@ -585,6 +564,10 @@ def respond_message(user, message):
 		if "@robovalkia" in lower_msg:
 			bot.send_message("@" + user + " I'm a bot, so I can't help you. Try talking to one of the awesome human mods instead.")
 			log("Responded to @RoboValkia in response to {u}.".format(u=user, m=lower_msg))
+
+		if "raid by @bpump and @1noname_7" in lower_msg:
+			bot.send_message(f"/ban {user}")
+			log(f"Banned botraider {user}")
 
 def get_data(name):
 	try:
@@ -669,9 +652,16 @@ if __name__ == "__main__":
 				modwall = 0
 				modwall_mods = set()
 
+			with open("chatlog.txt", "a", encoding="utf-8") as f:
+				f.write(f"{user}: {message}\n")
 
-		if user == "streamelements":
-			continue
+
+			if user == "streamelements":
+				msg_lower = message.lower()
+				if "won the duel vs robovalkia" in msg_lower:
+					log("Lost the duel!")
+				elif "robovalkia won the duel vs " in msg_lower:
+					log("Won the duel!")
 
 		sleep(0.25)
 
